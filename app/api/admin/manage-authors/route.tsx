@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma"
 import { authenticate } from "@/utils/fetchAuth";
+import { stringify } from "querystring";
 
 export async function GET() {
    const moderators = await prisma.user.findMany({
@@ -14,7 +15,10 @@ export async function GET() {
       }
    });
 
-   return moderators;
+   return new Response(JSON.stringify(moderators),{
+      status: 200,
+      headers: {"Content-type" : "application/json"}
+   });
 }
 
 export async function POST(req: Request) {
@@ -33,6 +37,10 @@ export async function POST(req: Request) {
          where: { id: id },
          data: { role: newRole },
       });
+
+      if (!id || !newRole){
+         return new Response(JSON.stringify({error: "Missing required fields."}));
+      }
 
       return new Response(JSON.stringify(roleToAuthor), {
          status: 200,
